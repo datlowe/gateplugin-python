@@ -39,6 +39,7 @@ def support_single(method):
 			return method(self, args[0])
 
 	return _support_annotation
+
 class AnnotationSet(object):
 	def __init__(self, doc, values = [], name = "", logger = []):
 		self.logger = logger
@@ -57,7 +58,8 @@ class AnnotationSet(object):
 		self._annotations_start = None
 		self._annotations_end = None
 
-		self._index_by_offset()
+		"""By default deactivated because it's quite expensive operation"""  
+		#self._index_by_offset()
 
 	def restrict(self, annotations):
 		"""Copies this annotation set, but restricts it to the given values"""
@@ -142,8 +144,12 @@ class AnnotationSet(object):
 
 		# Add the annotation to the required indices
 		self._annots[annotation.id] = annotation
-		self._annotations_start.insert(annotation)
-		self._annotations_end.insert(annotation)
+		
+		if self._annotations_start:
+			self._annotations_start.insert(annotation)
+			
+		if self._annotations_end:
+			self._annotations_end.insert(annotation)
 
 		if self._annot_types:
 			self._annot_types[annotation.type].append(annotation, check_offsets)
@@ -162,15 +168,23 @@ class AnnotationSet(object):
 			"annotationID": annotation.id})
 
 		del self._annots[annotation.id]
-		self._annotations_start.remove(annotation)
-		self._annotations_end.remove(annotation)
+
+		if self._annotations_start:
+			self._annotations_start.remove(annotation)
+			
+		if self._annotations_end:
+			self._annotations_end.remove(annotation)
 
 		if self._annot_types:
 			self._annot_types[annotation.type].remove(annotation)
 
 	def __iter__(self): 
-		"""Allows iteration in document order"""
-		return iter(self._annotations_start)
+		if self._annotations_start:
+			"""Allows iteration in document order"""
+			return iter(self._annotations_start)
+
+		return iter(self._annots.values())
+
 
 	def __getitem__(self, key):
 		"""Gets annotations of the given type"""
@@ -207,11 +221,15 @@ class AnnotationSet(object):
 
 	def at(self, offset):
 		"""Gets all annotations at the given offset (empty if none)"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		result = self._annotations_start[I(offset)]
 		return self.restrict(result)
 
 	def firstAfter(self, offset):
 		"""Gets all annotations at the first valid position after the given offset"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		result = self._annotations_start.nearest_after(I(offset))
 		return self.restrict(result)
 
@@ -219,6 +237,8 @@ class AnnotationSet(object):
 	@support_annotation
 	def overlapping(self, left, right):
 		"""Gets annotations overlapping with the two points"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		result = self._annotations_start[I(left):I(right)]
 		result += self._annotations_end[I(left+1):I(max(right, left+1))] # Must not end at the left offset.
 
@@ -228,6 +248,8 @@ class AnnotationSet(object):
 	@support_annotation
 	def covering(self, left, right):
 		"""Gets annotations that completely cover the span given"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		result = set(self._annotations_start[I(0):I(left)])
 		result.intersection_update(set(self._annotations_end[I(right+1):I(self.doc.size())]))
 		return self.restrict(result)
@@ -235,6 +257,8 @@ class AnnotationSet(object):
 	@support_annotation
 	def within(self, left, right):
 		"""Gets annotations that fall completely within the left and right given"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		result = set(self._annotations_start[I(left):I(right)])
 		result.intersection_update(set(self._annotations_end[I(left):I(right)]))
 
@@ -242,18 +266,26 @@ class AnnotationSet(object):
 
 	def after(self, offset):
 		"""Gets annotations that start after the given offset"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		return self.restrict(self._annotations_start[I(offset):I(self.doc.size())])
 
 	def before(self, offset):
 		"""Gets annotations that start after the given offset"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		return self.restrict(self._annotations_start[I(0):I(offset)])
 
 	def first(self):
 		"""Gets the first annotation within the annotation set"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		return self._annotations_start.min()
 
 	def last(self):
 		"""Gets the last annotation within the annotation set"""
+		if self._annotations_start is None:
+			self._index_by_offset()
 		return self._annotations_start.max()
 
 	def __contains__(self, value):

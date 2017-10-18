@@ -20,3 +20,5 @@ documents_json
 *.pyc
 
 target
+
+.pydevproject

@@ -61,7 +61,7 @@ class Document(object):
 		logger = []
 
 		text = json["text"]
-		text = Document.unescape(text)
+		#text = Document.unescape(text)
 
 		features = json["documentFeatures"]
 
