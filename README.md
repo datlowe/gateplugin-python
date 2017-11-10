@@ -1,3 +1,17 @@
+# Released version 1.0
+
+* For Python 3.x
+* Runs offline without ivy.
+* Fast document load.
+* Gate 8.1 support.
+
+Download: [gate-plugin-dir.zip](https://github.com/datlowe/gateplugin-python/releases/download/gateplugin-python-1.0/gateplugin-python-gate-plugin-dir-1.0.zip)
+
+Example GATE app inside of the zip archive: `gate_apps/python_tokenizer.gapp`
+
+Example python script: [python_tokenizer.py](https://github.com/datlowe/gateplugin-python/blob/master/gate_apps/python_tokenizer.py)
+
+
 # Python compatibility for GATE
 
 The aim of this project is to allow the writing of GATE processing resources in Python. This is achieved using interprocess communication rather than running Python within the JVM, so it is possible to use popular Python research software such as Gensim and NLTK within GATE.
@@ -15,18 +29,24 @@ The PythonPR transmits GATE documents in JSON format to the client, and waits fo
 This library consists of code to convert the JSON formatted document into a representation similar to that used within GATE itself. It allows for the modification of annotation sets and features, which will then be reflected in GATE. The following is a simple example:
 
 ```python
+import gate, re
+
 @gate.executable
 def tokenize(document, outputAS):
-	for token in document.text.split(" "):
-		outputAS.add(token.source.begin, 
-			token.source.end, 
-			"Token", 
-			{"string":token})
+    
+    p = re.compile('\w+')
 
-	return document
-		
+    for token in re.finditer(p, document.text):
+        outputAS.add(
+            token.start(), 
+            token.end(), 
+            "Token", 
+            {"string":token.group(), "rule":"py"})
+
+    return document
+
 if __name__ == "__main__":
-	tokenize.start()
+    tokenize.start()
 ```
 
 ## Usage
