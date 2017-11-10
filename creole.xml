@@ -1,4 +1,9 @@
-<CREOLE-DIRECTORY>
-	<JAR SCAN="true">gateplugin-python.jar</JAR>
-	<IVY/>
-</CREOLE-DIRECTORY>
+<?xml version="1.0"?>  
+<CREOLE-DIRECTORY ID="${project.groupId}.${project.artifactId}" VERSION="${project.version}">
+
+  <JAR SCAN="true">lib/${project.artifactId}-${project.version}.${project.packaging}</JAR>
+
+  <JAR SCAN="false">lib/jackson-jackson-core-${dependency.com.fasterxml.jackson.core.jackson-core.version}.jar</JAR>
+  <JAR SCAN="false">lib/jackson-databind-${dependency.com.fasterxml.jackson.core.jackson-databind.version}.jar</JAR>
+  <JAR SCAN="false">lib/jackson-annotations-${dependency.com.fasterxml.jackson.core.jackson-annotations.version}.jar</JAR>
+</CREOLE-DIRECTORY> 

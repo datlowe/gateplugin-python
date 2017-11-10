@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gateplugin-python</groupId>
   <artifactId>gateplugin-python</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,29 +19,54 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
-        <executions>
-        	<execution>
-        		<id>copy_jar_to creole_dir</id>
-        		<phase>install</phase>
-        		<goals><goal>copy</goal></goals>
-        		<configuration>
-        			<artifactItems>
-        			      <artifactItem>
-		                    <groupId>${project.groupId}</groupId>
-		                    <artifactId>${project.artifactId}</artifactId>
-		                    <version>${project.version}</version>
-		                    <type>${project.packaging}</type>
-		                   </artifactItem>
-		    		</artifactItems>
-		    		<outputDirectory>${project.build.directory}/..</outputDirectory>
-		    		<stripVersion>true</stripVersion>
-        		</configuration>
-        	</execution>
-        </executions>
-      </plugin>
+		<plugin>
+			<groupId>net.sf.czsem</groupId>
+			<artifactId>custom-properties-maven-plugin</artifactId>
+			<version>3.0.1</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>setproperties</goal>
+					</goals>
+					<phase>generate-resources</phase>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>2.3</version>
+			<executions>
+				<execution>
+					<id>install-assembly</id>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+					</goals>
+					<configuration>
+						<finalName>prepared</finalName>
+						<attach>true</attach>
+						<descriptors>
+							<descriptor>gate-plugin-dir.xml</descriptor>
+						</descriptors>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+			<groupId>external.atlassian.jgitflow</groupId>
+			<artifactId>jgitflow-maven-plugin</artifactId>
+			<version>1.0-m5.1</version>
+			<configuration>
+				<offline>true</offline>
+				<useReleaseProfile>false</useReleaseProfile>
+				<scmCommentPrefix>[RELEASE] </scmCommentPrefix>
+				<keepBranch>false</keepBranch>
+				<flowInitContext>
+					<versionTagPrefix>${project.artifactId}-</versionTagPrefix>
+					<releaseBranchPrefix>release-${project.artifactId}-</releaseBranchPrefix>
+				</flowInitContext>
+			</configuration>
+		</plugin>
     </plugins>
   </build>
   <dependencies>
@@ -49,6 +74,11 @@
   		<groupId>uk.ac.gate</groupId>
   		<artifactId>gate-core</artifactId>
   		<version>8.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.fasterxml.jackson.core</groupId>
+  		<artifactId>jackson-databind</artifactId>
+  		<version>2.7.4</version>
   	</dependency>
   </dependencies>
 </project>
